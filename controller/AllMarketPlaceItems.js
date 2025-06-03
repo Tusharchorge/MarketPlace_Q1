@@ -1,32 +1,40 @@
-//API to fetch marketplace items with filters
-
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/db'); 
+const pool = require('../config/db');
 
-router.get('/marketplace-items', async (req, res) => {
-    const { category,price } = req.query;
-    try {
-        let query = 'SELECT * FROM marketplace_items WHERE status = "active"';
-        const params = [];
+router.get('/items', async (req, res) => {
+  const { category, min_price, max_price, is_published } = req.query;
 
-        if (category) {
-            query += ' AND category = ?';
-            params.push(category);
-        }
+  let query = 'SELECT * FROM store_items WHERE 1=1';
+  const values = [];
 
-        if (price) {
-            query += ' AND price <= ?';
-            params.push(price);
-        }
+  if (category) {
+    query += ' AND category = ?';
+    values.push(category);
+  }
 
-        const [items] = await pool.query(query, params);
-        res.status(200).json(items);
-    } catch (error) {
-        console.error('Error fetching marketplace items:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-    
+  if (min_price) {
+    query += ' AND price >= ?';
+    values.push(Number(min_price));
+  }
+
+  if (max_price) {
+    query += ' AND price <= ?';
+    values.push(Number(max_price));
+  }
+
+  if (is_published !== undefined) {
+    query += ' AND is_published = ?';
+    values.push(is_published === 'true' ? 1 : 0);
+  }
+
+  try {
+    const [rows] = await pool.query(query, values);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching items:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 module.exports = router;

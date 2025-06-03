@@ -1,14 +1,17 @@
-const express=require('express');
-const app=express();
+const express = require('express');
+const cors = require('cors'); 
+const app = express();
+const PORT = 5000;
 
-const PORT=3000;
 
+app.use(cors());
 app.use(express.json());
- 
-app.use('/api',require('./controller/AddItems'));
-app.use('/api',require('./controller/AllMarketPlaceItems'));
-app.use('/api',require('./controller/sendRequest'));
 
- app.listen(PORT,()=>{
-    console.log("Server is running on port 3000");
- })
+// Routes
+app.use('/api', require('./controller/AddItems'));
+app.use('/api', require('./controller/AllMarketPlaceItems'));
+
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
